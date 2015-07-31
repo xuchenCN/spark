@@ -451,8 +451,16 @@ private[spark] class TaskSetManager(
           // Do various bookkeeping
           copiesRunning(index) += 1
           val attemptNum = taskAttempts(index).size
-          val info = new TaskInfo(taskId, index, attemptNum, curTime,
-            execId, host, taskLocality, speculative)
+          var info = (
+              if (task.isInstanceOf[ShuffleMapTask]) {
+                val mapTask: ShuffleMapTask = task.asInstanceOf[ShuffleMapTask]
+                new TaskInfo(taskId, index, attemptNum, curTime,
+                  execId, host, taskLocality, speculative, mapTask._partition)
+              } else {
+                new TaskInfo(taskId, index, attemptNum, curTime,
+                  execId, host, taskLocality, speculative)
+              }
+          )
           taskInfos(taskId) = info
           taskAttempts(index) = info :: taskAttempts(index)
           // Update our locality level for delay scheduling

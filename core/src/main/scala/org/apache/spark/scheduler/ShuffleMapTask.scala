@@ -85,5 +85,7 @@ private[spark] class ShuffleMapTask(
 
   override def preferredLocations: Seq[TaskLocation] = preferredLocs
 
+  def _partition: Partition = partition;
+
   override def toString: String = "ShuffleMapTask(%d, %d)".format(stageId, partitionId)
 }

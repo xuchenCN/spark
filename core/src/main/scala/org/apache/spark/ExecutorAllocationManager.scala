@@ -18,14 +18,12 @@
 package org.apache.spark
 
 import java.util.concurrent.TimeUnit
-
 import scala.collection.mutable
-
 import com.codahale.metrics.{Gauge, MetricRegistry}
-
 import org.apache.spark.scheduler._
 import org.apache.spark.metrics.source.Source
 import org.apache.spark.util.{ThreadUtils, Clock, SystemClock, Utils}
+import org.apache.spark.rdd.HadoopPartition
 
 /**
  * An agent that dynamically allocates and removes executors based on the workload.
@@ -508,7 +506,13 @@ private[spark] class ExecutorAllocationManager(
       val taskId = taskStart.taskInfo.taskId
       val taskIndex = taskStart.taskInfo.index
       val executorId = taskStart.taskInfo.executorId
-
+      val parition = taskStart.taskInfo.partition;
+      var inputLength = -1L
+      if(parition != null && parition.isInstanceOf[HadoopPartition]) {
+        val hp : HadoopPartition = parition.asInstanceOf[HadoopPartition]
+        inputLength = hp.inputSplit.value.getLength;
+      }
+      logInfo(s"Task start stageId $stageId - $taskId inputLength $inputLength")
       allocationManager.synchronized {
         numRunningTasks += 1
         // This guards against the race condition in which the `SparkListenerTaskStart`
@@ -539,6 +543,13 @@ private[spark] class ExecutorAllocationManager(
     override def onTaskEnd(taskEnd: SparkListenerTaskEnd): Unit = {
       val executorId = taskEnd.taskInfo.executorId
       val taskId = taskEnd.taskInfo.taskId
+      val parition = taskEnd.taskInfo.partition;
+      var inputLength = -1L
+      if(parition != null && parition.isInstanceOf[HadoopPartition]) {
+        val hp : HadoopPartition = parition.asInstanceOf[HadoopPartition]
+        inputLength = hp.inputSplit.value.getLength;
+      }
+      logInfo(s"Task end $taskId inputLength $inputLength")
       allocationManager.synchronized {
         numRunningTasks -= 1
         // If the executor is no longer running any scheduled tasks, mark it as idle

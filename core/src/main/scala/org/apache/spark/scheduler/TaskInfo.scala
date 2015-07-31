@@ -18,8 +18,8 @@
 package org.apache.spark.scheduler
 
 import scala.collection.mutable.ListBuffer
-
 import org.apache.spark.annotation.DeveloperApi
+import org.apache.spark.Partition
 
 /**
  * :: DeveloperApi ::
@@ -34,7 +34,18 @@ class TaskInfo(
     val executorId: String,
     val host: String,
     val taskLocality: TaskLocality.TaskLocality,
-    val speculative: Boolean) {
+    val speculative: Boolean,
+    val partition: Partition) {
+
+  def this(taskId: Long,
+    index: Int,
+    attempt: Int,
+    launchTime: Long,
+    executorId: String,
+    host: String,
+    taskLocality: TaskLocality.TaskLocality,
+    speculative: Boolean) =
+      this(taskId, index, attempt, launchTime, executorId, host, taskLocality, speculative, null)
 
   /**
    * The time when the task started remotely getting the result. Will not be set if the
