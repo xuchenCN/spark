@@ -62,7 +62,9 @@ private[spark] object RDDInfo {
     val parentIds = rdd.dependencies.map(_.rdd.id)
     var hadoopParitions = rdd.partitions.filter { p => p.isInstanceOf[HadoopPartition] }
     var sum = 0L
-    hadoopParitions.foreach { p => sum += p.asInstanceOf[HadoopPartition].inputSplit.value.getLength}
-    new RDDInfo(rdd.id, rddName, rdd.partitions.length, rdd.getStorageLevel, parentIds, rdd.scope, sum)
+    hadoopParitions.foreach {
+      p => sum += p.asInstanceOf[HadoopPartition].inputSplit.value.getLength}
+    new RDDInfo(rdd.id, rddName, rdd.partitions.length, rdd.getStorageLevel,
+        parentIds, rdd.scope, sum)
   }
 }

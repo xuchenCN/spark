@@ -481,8 +481,9 @@ private[spark] class ExecutorAllocationManager(
         stageIdToNumTasks(stageId) = numTasks
         allocationManager.onSchedulerBacklogged()
       }
-      stageSubmitted.stageInfo.rddInfos.foreach { rddInfo => logInfo("onStage start rdd input size : " + rddInfo.inputSize) }
-      
+      stageSubmitted.stageInfo.rddInfos.foreach {
+        rddInfo => logInfo("onStage start rdd input size : " + rddInfo.inputSize) }
+
     }
 
     override def onStageCompleted(stageCompleted: SparkListenerStageCompleted): Unit = {
