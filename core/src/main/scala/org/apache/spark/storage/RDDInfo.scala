@@ -32,23 +32,8 @@ class RDDInfo(
     var storageLevel: StorageLevel,
     val parentIds: Seq[Int],
     val scope: Option[RDDOperationScope] = None,
-    val inputSize: Long)
+    val inputSize: Long = -1L)
   extends Ordered[RDDInfo] {
-
-  def this(
-    id: Int,
-    name: String,
-    numPartitions: Int,
-    storageLevel: StorageLevel,
-    parentIds: Seq[Int],
-    scope: Option[RDDOperationScope] = None) =
-      this(id,
-          name,
-          numPartitions,
-          storageLevel,
-          parentIds,
-          scope,
-          -1L)
 
   var numCachedPartitions = 0
   var memSize = 0L
