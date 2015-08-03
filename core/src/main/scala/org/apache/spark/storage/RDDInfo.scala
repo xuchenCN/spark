@@ -18,8 +18,11 @@
 package org.apache.spark.storage
 
 import org.apache.spark.annotation.DeveloperApi
-import org.apache.spark.rdd.{RDDOperationScope, RDD}
+import org.apache.spark.rdd.HadoopRDD
+import org.apache.spark.rdd.RDD
+import org.apache.spark.rdd.RDDOperationScope
 import org.apache.spark.util.Utils
+import org.apache.spark.rdd.HadoopPartition
 
 @DeveloperApi
 class RDDInfo(
@@ -28,8 +31,24 @@ class RDDInfo(
     val numPartitions: Int,
     var storageLevel: StorageLevel,
     val parentIds: Seq[Int],
-    val scope: Option[RDDOperationScope] = None)
+    val scope: Option[RDDOperationScope] = None,
+    val inputSize: Long)
   extends Ordered[RDDInfo] {
+
+  def this(
+    id: Int,
+    name: String,
+    numPartitions: Int,
+    storageLevel: StorageLevel,
+    parentIds: Seq[Int],
+    scope: Option[RDDOperationScope] = None) =
+      this(id,
+          name,
+          numPartitions,
+          storageLevel,
+          parentIds,
+          scope,
+          -1L)
 
   var numCachedPartitions = 0
   var memSize = 0L
@@ -56,6 +75,9 @@ private[spark] object RDDInfo {
   def fromRdd(rdd: RDD[_]): RDDInfo = {
     val rddName = Option(rdd.name).getOrElse(Utils.getFormattedClassName(rdd))
     val parentIds = rdd.dependencies.map(_.rdd.id)
-    new RDDInfo(rdd.id, rddName, rdd.partitions.length, rdd.getStorageLevel, parentIds, rdd.scope)
+    var hadoopParitions = rdd.partitions.filter { p => p.isInstanceOf[HadoopPartition] }
+    var sum = 0L
+    hadoopParitions.foreach { p => sum += p.asInstanceOf[HadoopPartition].inputSplit.value.getLength}
+    new RDDInfo(rdd.id, rddName, rdd.partitions.length, rdd.getStorageLevel, parentIds, rdd.scope, sum)
   }
 }
