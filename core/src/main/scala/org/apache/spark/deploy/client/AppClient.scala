@@ -70,7 +70,7 @@ private[spark] class AppClient(
     // time so that we can register with all masters.
     private val registerMasterThreadPool = ThreadUtils.newDaemonCachedThreadPool(
       "appclient-register-master-threadpool",
-      masterRpcAddresses.length // Make sure we can register with all masters at the same time
+      masterRpcAddresses.length * REGISTRATION_RETRIES // Make sure we can register with all masters at the same time
     )
 
     // A scheduled executor for scheduling the registration actions
